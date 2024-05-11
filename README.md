@@ -1,5 +1,5 @@
 # wsp2j
-Web Scrapping Project 2 for Java (wsp2j). Automated local website monitoring and logging using JSoup.
+Web Scrapping Project 2 for Java (wsp2j). Automated locally hosted periodic website monitoring and logging using JSoup.
 
 ## Input Files
 
