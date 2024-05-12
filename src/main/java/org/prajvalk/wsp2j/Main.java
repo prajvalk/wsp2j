@@ -26,13 +26,16 @@ public class Main {
                 "The MIT License (full license: https://opensource.org/license/mit)");
         System.out.println();
 
+        System.out.println("wsp2j::core [init]: Beginning initialization procedure");
+
         initialize();
         timestring = Utility.getSpecificTime();
         initializeTimings();
         System.out.println("wsp2j::core [init]: Initialization complete.");
+        System.out.println("wsp2j::core [init]: Refreshing all targets and starting scheduler service");
         refreshAll();
 
-        System.out.println("wsp2j::core [init]: Scheduler running every "+hours+"hrs "+minutes+"min "+seconds+"sec");
+        System.out.println("wsp2j::core [init]: Scheduler activated and running every "+hours+"hrs "+minutes+"min "+seconds+"sec");
 
         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
         scheduledThreadPool.scheduleAtFixedRate(Main::refreshAll, 0, 60 * (60 * hours + minutes) + seconds, TimeUnit.SECONDS);
@@ -88,6 +91,7 @@ public class Main {
     public static void updateTargets(boolean skipChecking) {
         Vector<String> list = Utility.readData("targets.list");
         for(String t : list) {
+            if(t.startsWith("#")) continue;
             String[] fields = t.split(",");
             String CLASS = fields[0];
             if(CLASS.equals("CLASSIFICATION")) continue;
@@ -98,6 +102,12 @@ public class Main {
                     continue;
             Target target = new Target(CLASS, TARGET_ID, URL);
             targets.addElement(target);
+            try {
+                System.out.println("wsp2j::core [init]: Updating SSH Certificates for " + URL);
+                SSHCertificateHelper.loadcert(Utility.getDomainName(URL));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

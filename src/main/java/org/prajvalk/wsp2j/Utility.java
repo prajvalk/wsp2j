@@ -5,6 +5,8 @@ import org.jsoup.nodes.Document;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -98,6 +100,13 @@ public class Utility {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
         return sdf.format(cal.getTime());
+    }
+
+    public static String getDomainName(String url) throws URISyntaxException {
+        URI uri = new URI(url);
+        String domain = uri.getHost();
+        //return domain.startsWith("www.") ? domain.substring(4) : domain;
+        return domain;
     }
 
 }
