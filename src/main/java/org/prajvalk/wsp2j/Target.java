@@ -1,8 +1,12 @@
 package org.prajvalk.wsp2j;
 
+import org.prajvalk.wsp2j.plugins.ReportX;
+
 import java.io.Serializable;
 
 public class Target implements Serializable {
+    public static ReportX reporter;
+
     private final String CLASS;
     private final String ID;
     private final String URL;
@@ -15,7 +19,9 @@ public class Target implements Serializable {
     }
 
     public void refresh() {
-        hash = Utility.getHash(Utility.getData(URL));
+        String data = Utility.getData(URL);
+        reporter.postState.put(ID, data);
+        hash = Utility.getHash(data);
     }
 
     public String getID() {

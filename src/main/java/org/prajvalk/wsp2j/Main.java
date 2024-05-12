@@ -1,5 +1,8 @@
 package org.prajvalk.wsp2j;
 
+import jdk.jshell.execution.Util;
+import org.prajvalk.wsp2j.plugins.ReportX;
+
 import java.io.File;
 import java.util.Scanner;
 import java.util.Vector;
@@ -24,10 +27,12 @@ public class Main {
         System.out.println("Copyright (C) 2024, Chlorine Pentoxide & Prajval K");
         System.out.println("By using this utility you hereby agree and abide by \n" +
                 "The MIT License (full license: https://opensource.org/license/mit)");
+        System.out.println("Installed plugins: reportx");
         System.out.println();
 
         System.out.println("wsp2j::core [init]: Beginning initialization procedure");
 
+        initializePlugins();
         initialize();
         timestring = Utility.getSpecificTime();
         initializeTimings();
@@ -39,6 +44,15 @@ public class Main {
 
         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
         scheduledThreadPool.scheduleAtFixedRate(Main::refreshAll, 0, 60 * (60 * hours + minutes) + seconds, TimeUnit.SECONDS);
+    }
+
+    public static void initializePlugins() {
+        File f = new File("wsp2j-reportx.obj");
+        if(f.exists()) {
+            Target.reporter = (ReportX) Utility.getObject(f.getName());
+        } else {
+            Target.reporter = new ReportX();
+        }
     }
 
     public static void initialize() {
@@ -108,6 +122,8 @@ public class Main {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+            Vector<String> reportData = new Vector<>(1,1);
+            Target.reporter.reports.put(TARGET_ID, reportData);
         }
     }
 
@@ -116,14 +132,19 @@ public class Main {
         String timedata = Utility.getTime();
         monitoring.addElement("wsp2j::monitoring [core]: Initiating refresh procedure at "+timedata);
         long startTime = System.nanoTime();
+        Target.reporter.next();
         for(Target target : targets) {
             String preHash = target.getHash();
+            String predata = null;
+            if(Target.reporter.preState.containsKey(target.getID())) predata = Target.reporter.preState.get(target.getID());
             if(preHash == null) preHash = "";
             target.refresh();
             String postHash = target.getHash();
+            String postData = Target.reporter.postState.get(target.getID());
             if(!preHash.equals(postHash)) {
                 monitoring.addElement("wsp2j::monitoring ["+target.getCLASS()+"/"+target.getID()+"] "+timedata+": Change Detected");
                 hits++;
+                Target.reporter.report(target, predata, postData, timedata);
             }
         }
         long runtime = System.nanoTime() - startTime;
@@ -132,6 +153,7 @@ public class Main {
         monitoring.addElement("wsp2j::monitoring [core]: Found "+hits+" changes in the target list.");
         monitoring.addElement("wsp2j::core [refreshAll]: Saving objects");
         Utility.saveObject("targets.obj", targets);
+        Utility.saveObject("wsp2j-reportx.obj", Target.reporter);
         Utility.writeData("wsp2j-monitoring-"+timestring+".txt", monitoring);
     }
 
