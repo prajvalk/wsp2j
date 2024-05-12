@@ -31,6 +31,20 @@ Keys
 * ```xo-``` : Resume Mode: Loads target vector database from file and initiates timing scheduler
 * ```lo-``` : Update and Resume Mode: Loads and updates the vector database from files and initiates timing scheduler
 
+## Operational Details
+* Initialization Sequence
+   1) Scan targets and load the database into memory
+   2) Load required SSH certificates (into local JDK keystore) for relevant domains (skipped if all certificates are up-to-date)
+   3) Scan and load timings for the scheduler sequence
+   4) Scan and load the required plugins
+  
+* Run Sequence
+   1) Schedule single-threaded executor service to refresh target hashcodes.
+   2) Trigger plugin hook if hashcode change is registered.
+
+* Error Handling
+  
+  Not present; you are on your own.
  #
  
 **Copyright (C) 2024, Prajval K (@prajvalk) & Chlorine Pentoxide (@ChlorinePentoxide)**
